@@ -446,7 +446,7 @@
           }
         }
 
-        const api = window.gifuctjs || {};
+        const api = window.gifuctjs || window.gifuct || window.GIFuct || window.GIFUCT || {};
         if (typeof api.parseGIF !== 'function' || typeof api.decompressFrames !== 'function') {
           throw new Error('GIFデコーダーが利用できません');
         }
@@ -687,7 +687,12 @@
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext('2d');
-        const captureFps = clamp(settings.hz, MIN_HZ, MAX_HZ);
+        const minDelayMs = gifFrames.reduce(
+          (minV, f) => Math.min(minV, Math.max(10, f.delayMs || 100)),
+          1000
+        );
+        const autoHz = 1000 / minDelayMs;
+        const captureFps = clamp(Math.max(settings.hz, autoHz), MIN_HZ, MAX_HZ);
         const stream = canvas.captureStream(captureFps);
 
         const mimeCandidates = [
@@ -735,9 +740,10 @@
           height: h,
           frameCount: gifFrames.length,
           sourceGifName,
+          captureFps,
         });
         setStatus('done');
-        setStatusMessage(`動画生成完了: ${gifFrames.length} フレーム`);
+        setStatusMessage(`動画生成完了: ${gifFrames.length} フレーム (${captureFps.toFixed(2)}fps)`);
         setProgress(100);
       }, [gifFrames, settings.hz, sourceGifName, setBlobOutput]);
 

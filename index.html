@@ -77,6 +77,224 @@
       },
     };
 
+
+    const STRINGS = {
+      ja: {
+        modeLabel: {
+          [MODES.TO_GIF]: '画像/動画 → GIF',
+          [MODES.GIF_TO_VIDEO]: 'GIF → 動画',
+          [MODES.GIF_TO_IMAGES]: 'GIF → 画像ZIP',
+        },
+        langToggle: 'EN',
+        darkTitle: 'ライトモード',
+        lightTitle: 'ダークモード',
+        dropToGifIdle: '画像または動画をドラッグ＆ドロップ、またはクリック',
+        dropToGifOver: 'ここにドロップ！',
+        dropGifIdle: 'GIF をドラッグ＆ドロップ、またはクリック',
+        dropGifOver: 'GIF をドロップ！',
+        dropToGifHint: '画像: PNG/JPG/WebP/GIF, 動画: MP4/WebM/その他ブラウザ対応形式',
+        dropGifHint: '入力: GIF 1ファイル',
+        framesLoaded: (n) => `${n} フレーム読み込み済み`,
+        secFrames: 'フレーム',
+        btnAdd: '追加',
+        btnClear: 'クリア',
+        btnMoveLeft: '左へ移動',
+        btnDelete: '削除',
+        btnMoveRight: '右へ移動',
+        secSettings: '設定',
+        labelHz: 'フレームレート (Hz)',
+        labelMs: 'フレーム遅延 (ms)',
+        gifSaveNote: (ms, hz) => `GIF 保存値: ${ms}ms (${hz}Hz)`,
+        gifSaveHint: 'GIF 仕様上、保存は 10ms 単位に丸められます。',
+        labelLoop: 'ループ回数',
+        loopLow: '0 (無限)',
+        labelWidth: '出力横幅',
+        labelQuality: '品質',
+        qualityLow: '1 (高速)',
+        qualityHigh: '10 (高品質)',
+        labelMaxColors: '最大色数',
+        labelVideoLimit: '動画フレーム抽出上限',
+        labelFormat: '出力フォーマット',
+        unsupported: '(非対応)',
+        reverseNote: 'GIF 逆変換では GIF の各フレーム遅延を維持します。',
+        reverseHint: '動画出力時は captureStream の補助FPSとして Hz 設定を使用します。',
+        secPreview: 'プレビュー',
+        btnFirst: '最初のフレーム',
+        btnPrev: '前のフレーム',
+        btnNext: '次のフレーム',
+        btnLast: '最後のフレーム',
+        btnPause: '一時停止',
+        btnPlay: '再生',
+        playing: '▶ 再生中',
+        delayLabel: '遅延:',
+        btnReset: 'リセット',
+        resetTitle: 'デフォルト遅延に戻す',
+        btnApplyAll: '全フレームをデフォルト遅延に統一',
+        emptyToGif: '画像または動画を追加するとプレビューが表示されます',
+        emptyGif: 'GIF を追加するとプレビューが表示されます',
+        actionGif: 'GIF 生成',
+        actionVideo: (label) => `動画生成 (${label})`,
+        actionZip: '画像ZIP生成',
+        btnCancel: 'キャンセル',
+        btnDownload: 'ダウンロード',
+        preparing: '準備中...',
+        idleToGifEmpty: '画像または動画を追加してください',
+        idleGifEmpty: 'GIF ファイルを追加してください',
+        idleInput: (ms, hz) => `入力 ${ms}ms (${hz}Hz)`,
+        idleSaved: (ms, hz) => `保存 ${ms}ms (${hz}Hz)`,
+        idleWidth: (w) => `幅 ${w}px`,
+        idleColors: (n) => `色数上限 ${n}`,
+        idleGifSummary: (n, name) => `${n} フレーム · 入力 GIF: ${name}`,
+        outPreview: '出力プレビュー:',
+        zipMsg: 'ZIP を生成しました。ダウンロードボタンから保存できます。',
+        framesUnit: (n) => `${n} フレーム`,
+        statusLoading: 'ファイルを読み込み中...',
+        statusFramingVideo: (name) => `動画をフレーム化中: ${name}`,
+        statusFramingProgress: (name, cur, total) => `動画をフレーム化中: ${name} (${cur}/${total})`,
+        statusLoadDone: (n) => `読み込み完了: ${n} フレーム追加`,
+        statusNoFiles: '読み込めるファイルがありません',
+        statusAnalyzing: (name) => `GIF を解析中: ${name}`,
+        statusAnalyzingProgress: (name, cur, total) => `GIF を解析中: ${name} (${cur}/${total})`,
+        statusAnalyzeDone: (n) => `読み込み完了: ${n} フレーム`,
+        statusCancelled: 'キャンセルしました',
+        statusGeneratingGif: 'GIF を生成中...',
+        statusGifDone: (n, ms, hz) => `生成完了: ${n} フレーム / ${ms}ms (${hz}Hz)`,
+        statusGifDoneMulti: (n, min, max) => `生成完了: ${n} フレーム / 個別遅延 ${min}–${max}ms`,
+        statusGeneratingVideo: 'GIF から動画を生成中...',
+        statusVideoDone: (n, fps, label) => `動画生成完了: ${n} フレーム (${fps}fps) [${label}]`,
+        statusGeneratingZip: 'フレーム画像 ZIP を生成中...',
+        statusZipDone: (n) => `ZIP 生成完了: ${n} フレーム`,
+        errNoGif: 'GIF ファイルを選択してください',
+        errNoGifFrames: 'GIF フレームを取得できませんでした',
+        errGifDecoder: 'GIF デコーダーが利用できません',
+        errBrowserNoVideo: 'このブラウザは動画生成に対応していません',
+        errNoZip: 'ZIP ライブラリが利用できません',
+        errNoWorker: 'GIF エンコーダーの準備中です',
+        errNoFrames: '変換するフレームがありません',
+        errNoGifVideoFrames: 'GIF フレームがありません',
+        errLoad: '読み込みに失敗しました',
+        errAnalyze: 'GIF 解析に失敗しました',
+        errConvert: '変換に失敗しました',
+        unitColors: '色',
+        lowColors: '2色',
+        highColors: '256色',
+        unitFrames: 'フレーム',
+        processing: '処理中...',
+        frameCounter: (cur, total) => `${cur} / ${total} フレーム`,
+        footerCopyright: 'Copyright © 2026 Xenoah',
+        footerLicense: 'MIT License',
+        footerAssisted: 'Assisted by Codex / Claude Code',
+        footerLibs: 'React 18 · gif.js · gifuct-js · JSZip · Tailwind CSS',
+      },
+      en: {
+        modeLabel: {
+          [MODES.TO_GIF]: 'Image/Video → GIF',
+          [MODES.GIF_TO_VIDEO]: 'GIF → Video',
+          [MODES.GIF_TO_IMAGES]: 'GIF → Image ZIP',
+        },
+        langToggle: 'JP',
+        darkTitle: 'Light mode',
+        lightTitle: 'Dark mode',
+        dropToGifIdle: 'Drag & drop images or videos, or click',
+        dropToGifOver: 'Drop here!',
+        dropGifIdle: 'Drag & drop a GIF, or click',
+        dropGifOver: 'Drop GIF here!',
+        dropToGifHint: 'Images: PNG/JPG/WebP/GIF · Videos: MP4/WebM/browser-supported',
+        dropGifHint: 'Input: 1 GIF file',
+        framesLoaded: (n) => `${n} frames loaded`,
+        secFrames: 'Frames',
+        btnAdd: 'Add',
+        btnClear: 'Clear',
+        btnMoveLeft: 'Move left',
+        btnDelete: 'Delete',
+        btnMoveRight: 'Move right',
+        secSettings: 'Settings',
+        labelHz: 'Frame Rate (Hz)',
+        labelMs: 'Frame Delay (ms)',
+        gifSaveNote: (ms, hz) => `GIF saved: ${ms}ms (${hz}Hz)`,
+        gifSaveHint: 'GIF format stores delay in 10ms increments.',
+        labelLoop: 'Loop Count',
+        loopLow: '0 (infinite)',
+        labelWidth: 'Output Width',
+        labelQuality: 'Quality',
+        qualityLow: '1 (fast)',
+        qualityHigh: '10 (high quality)',
+        labelMaxColors: 'Max Colors',
+        labelVideoLimit: 'Video Frame Limit',
+        labelFormat: 'Output Format',
+        unsupported: '(unsupported)',
+        reverseNote: "GIF reverse mode preserves each frame's original delay.",
+        reverseHint: 'For video output, Hz is used as auxiliary captureStream FPS.',
+        secPreview: 'Preview',
+        btnFirst: 'First frame',
+        btnPrev: 'Previous frame',
+        btnNext: 'Next frame',
+        btnLast: 'Last frame',
+        btnPause: 'Pause',
+        btnPlay: 'Play',
+        playing: '▶ Playing',
+        delayLabel: 'Delay:',
+        btnReset: 'Reset',
+        resetTitle: 'Reset to default delay',
+        btnApplyAll: 'Apply default delay to all frames',
+        emptyToGif: 'Add images or videos to see a preview',
+        emptyGif: 'Add a GIF to see a preview',
+        actionGif: 'Generate GIF',
+        actionVideo: (label) => `Generate Video (${label})`,
+        actionZip: 'Generate Image ZIP',
+        btnCancel: 'Cancel',
+        btnDownload: 'Download',
+        preparing: 'Preparing...',
+        idleToGifEmpty: 'Add images or videos to get started',
+        idleGifEmpty: 'Add a GIF file to get started',
+        idleInput: (ms, hz) => `Input ${ms}ms (${hz}Hz)`,
+        idleSaved: (ms, hz) => `Saved ${ms}ms (${hz}Hz)`,
+        idleWidth: (w) => `Width ${w}px`,
+        idleColors: (n) => `Max colors ${n}`,
+        idleGifSummary: (n, name) => `${n} frames · Input GIF: ${name}`,
+        outPreview: 'Output Preview:',
+        zipMsg: 'ZIP created. Click Download to save.',
+        framesUnit: (n) => `${n} frames`,
+        statusLoading: 'Loading files...',
+        statusFramingVideo: (name) => `Extracting frames: ${name}`,
+        statusFramingProgress: (name, cur, total) => `Extracting frames: ${name} (${cur}/${total})`,
+        statusLoadDone: (n) => `Done: ${n} frames added`,
+        statusNoFiles: 'No supported files found',
+        statusAnalyzing: (name) => `Analyzing GIF: ${name}`,
+        statusAnalyzingProgress: (name, cur, total) => `Analyzing GIF: ${name} (${cur}/${total})`,
+        statusAnalyzeDone: (n) => `Done: ${n} frames`,
+        statusCancelled: 'Cancelled',
+        statusGeneratingGif: 'Generating GIF...',
+        statusGifDone: (n, ms, hz) => `Done: ${n} frames / ${ms}ms (${hz}Hz)`,
+        statusGifDoneMulti: (n, min, max) => `Done: ${n} frames / per-frame ${min}–${max}ms`,
+        statusGeneratingVideo: 'Generating video from GIF...',
+        statusVideoDone: (n, fps, label) => `Video done: ${n} frames (${fps}fps) [${label}]`,
+        statusGeneratingZip: 'Generating image ZIP...',
+        statusZipDone: (n) => `ZIP done: ${n} frames`,
+        errNoGif: 'Please select a GIF file',
+        errNoGifFrames: 'Could not extract GIF frames',
+        errGifDecoder: 'GIF decoder unavailable',
+        errBrowserNoVideo: 'This browser does not support video generation',
+        errNoZip: 'ZIP library unavailable',
+        errNoWorker: 'GIF encoder is loading',
+        errNoFrames: 'No frames to convert',
+        errNoGifVideoFrames: 'No GIF frames',
+        errLoad: 'Failed to load file',
+        errAnalyze: 'Failed to analyze GIF',
+        errConvert: 'Conversion failed',
+        unitColors: '',
+        lowColors: '2',
+        highColors: '256',
+        unitFrames: 'frames',
+        processing: 'Processing...',
+        frameCounter: (cur, total) => `${cur} / ${total}`,
+        footerCopyright: 'Copyright © 2026 Xenoah',
+        footerLicense: 'MIT License',
+        footerAssisted: 'Assisted by Codex / Claude Code',
+        footerLibs: 'React 18 · gif.js · gifuct-js · JSZip · Tailwind CSS',
+      },
+    };
+
     const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -282,6 +500,7 @@
       const [darkMode, setDarkMode] = useState(
         window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
       );
+      const [lang, setLang] = useState('ja');
 
       const fileInputRef = useRef(null);
       const gifEncoderRef = useRef(null);
@@ -329,6 +548,9 @@
       const effectiveVideoFormat = settings.videoFormat === 'mp4' && mp4MimeType ? 'mp4' : 'webm';
       const effectiveVideoOutput = VIDEO_OUTPUTS[effectiveVideoFormat];
       const previewDelay = useMemo(() => activeFrameDelayMs, [activeFrameDelayMs]);
+      const t = STRINGS[lang];
+      const tRef = useRef(t);
+      tRef.current = t;
 
       const clearOutput = useCallback(() => {
         if (outputUrlRef.current) {
@@ -582,7 +804,7 @@
 
         const api = window.gifuctjs || window.gifuct || window.GIFuct || window.GIFUCT || {};
         if (typeof api.parseGIF !== 'function' || typeof api.decompressFrames !== 'function') {
-          throw new Error('GIFデコーダーが利用できません');
+          throw new Error(tRef.current.errGifDecoder);
         }
 
         const parsed = api.parseGIF(bytes);
@@ -628,7 +850,7 @@
         const files = Array.from(fileList || []);
         if (!files.length) return;
         setStatus('processing');
-        setStatusMessage('ファイルを読み込み中...');
+        setStatusMessage(tRef.current.statusLoading);
         setProgress(0);
 
         const additions = [];
@@ -651,14 +873,14 @@
             }
 
             if (file.type.startsWith('video/')) {
-              setStatusMessage(`動画をフレーム化中: ${file.name}`);
+              setStatusMessage(tRef.current.statusFramingVideo(file.name));
               const extracted = await extractFramesFromVideo(
                 file,
                 (p, current, total) => {
                   const base = (idx / files.length) * 100;
                   const share = 100 / files.length;
                   setProgress(Math.round(base + (p / 100) * share));
-                  setStatusMessage(`動画をフレーム化中: ${file.name} (${current}/${total})`);
+                  setStatusMessage(tRef.current.statusFramingProgress(file.name, current, total));
                 }
               );
               additions.push(...extracted);
@@ -667,22 +889,22 @@
 
           if (additions.length > 0) {
             setToGifFrames((prev) => [...prev, ...additions]);
-            setStatusMessage(`読み込み完了: ${additions.length} フレーム追加`);
+            setStatusMessage(tRef.current.statusLoadDone(additions.length));
           } else {
-            setStatusMessage('読み込めるファイルがありません');
+            setStatusMessage(tRef.current.statusNoFiles);
           }
           setStatus('idle');
           setProgress(0);
         } catch (err) {
           if (isCancelError(err)) {
             setStatus('idle');
-            setStatusMessage('キャンセルしました');
+            setStatusMessage(tRef.current.statusCancelled);
             setProgress(0);
             return;
           }
           console.error(err);
           setStatus('error');
-          setStatusMessage(err.message || '読み込みに失敗しました');
+          setStatusMessage(err.message || tRef.current.errLoad);
         }
       }, [extractFramesFromVideo, settings.ms]);
 
@@ -691,37 +913,37 @@
         const gifFile = files.find((f) => f.type === 'image/gif' || /\.gif$/i.test(f.name));
         if (!gifFile) {
           setStatus('error');
-          setStatusMessage('GIF ファイルを選択してください');
+          setStatusMessage(tRef.current.errNoGif);
           return;
         }
 
         setStatus('processing');
-        setStatusMessage(`GIF を解析中: ${gifFile.name}`);
+        setStatusMessage(tRef.current.statusAnalyzing(gifFile.name));
         setProgress(0);
 
         try {
           const frames = await decodeGifFrames(gifFile, (p, current, total) => {
             setProgress(p);
-            setStatusMessage(`GIF を解析中: ${gifFile.name} (${current}/${total})`);
+            setStatusMessage(tRef.current.statusAnalyzingProgress(gifFile.name, current, total));
           });
-          if (!frames.length) throw new Error('GIF フレームを取得できませんでした');
+          if (!frames.length) throw new Error(tRef.current.errNoGifFrames);
           setGifFrames(frames);
           setSourceGifName(gifFile.name);
           setStatus('idle');
-          setStatusMessage(`読み込み完了: ${frames.length} フレーム`);
+          setStatusMessage(tRef.current.statusAnalyzeDone(frames.length));
           setProgress(0);
           setPreviewIdx(0);
           setIsPlaying(false);
         } catch (err) {
           if (isCancelError(err)) {
             setStatus('idle');
-            setStatusMessage('キャンセルしました');
+            setStatusMessage(tRef.current.statusCancelled);
             setProgress(0);
             return;
           }
           console.error(err);
           setStatus('error');
-          setStatusMessage(err.message || 'GIF 解析に失敗しました');
+          setStatusMessage(err.message || tRef.current.errAnalyze);
         }
       }, [decodeGifFrames]);
 
@@ -736,15 +958,15 @@
       }, [mode, clearOutput, loadToGifSources, loadGifSource]);
 
       const generateGif = useCallback(async () => {
-        if (!workerReady) throw new Error('GIF エンコーダーの準備中です');
-        if (!toGifFrames.length) throw new Error('変換するフレームがありません');
+        if (!workerReady) throw new Error(tRef.current.errNoWorker);
+        if (!toGifFrames.length) throw new Error(tRef.current.errNoFrames);
         if (gifEncoderRef.current) {
           try { gifEncoderRef.current.abort(); } catch (_) {}
           gifEncoderRef.current = null;
         }
 
         setStatus('generating');
-        setStatusMessage('GIF を生成中...');
+        setStatusMessage(tRef.current.statusGeneratingGif);
         setProgress(0);
 
         const images = await Promise.all(toGifFrames.map((f) => loadImageFromSrc(f.src)));
@@ -803,9 +1025,9 @@
           delayStats: toGifDelayStats,
         });
         setStatus('done');
-        setStatusMessage(`生成完了: ${toGifFrames.length} フレーム / ${savedMs}ms (${savedHz.toFixed(2)}Hz)`);
+        setStatusMessage(tRef.current.statusGifDone(toGifFrames.length, savedMs, savedHz.toFixed(2)));
         if (toGifDelayStats && toGifDelayStats.savedMin !== toGifDelayStats.savedMax) {
-          setStatusMessage(`ç”Ÿæˆå®Œäº†: ${toGifFrames.length} ãƒ•ãƒ¬ãƒ¼ãƒ  / å€‹åˆ¥é…å»¶ ${toGifDelayStats.savedMin}-${toGifDelayStats.savedMax}ms`);
+          setStatusMessage(tRef.current.statusGifDoneMulti(toGifFrames.length, toGifDelayStats.savedMin, toGifDelayStats.savedMax));
         }
         setProgress(100);
         gifEncoderRef.current = null;
@@ -824,11 +1046,11 @@
       ]);
 
       const generateVideoFromGif = useCallback(async () => {
-        if (!gifFrames.length) throw new Error('GIF フレームがありません');
-        if (!window.MediaRecorder) throw new Error('このブラウザは動画生成に対応していません');
+        if (!gifFrames.length) throw new Error(tRef.current.errNoGifVideoFrames);
+        if (!window.MediaRecorder) throw new Error(tRef.current.errBrowserNoVideo);
 
         setStatus('generating');
-        setStatusMessage('GIF から動画を生成中...');
+        setStatusMessage(tRef.current.statusGeneratingVideo);
         setProgress(0);
 
         const imgs = await Promise.all(gifFrames.map((f) => loadImageFromSrc(f.src)));
@@ -892,16 +1114,16 @@
           format: effectiveVideoOutput.id,
         });
         setStatus('done');
-        setStatusMessage(`動画生成完了: ${gifFrames.length} フレーム (${captureFps.toFixed(2)}fps) [${effectiveVideoOutput.label}]`);
+        setStatusMessage(tRef.current.statusVideoDone(gifFrames.length, captureFps.toFixed(2), effectiveVideoOutput.label));
         setProgress(100);
       }, [gifFrames, settings.hz, effectiveVideoFormat, effectiveVideoOutput, sourceGifName, setBlobOutput, getSupportedVideoMime]);
 
       const generateZipFromGif = useCallback(async () => {
-        if (!gifFrames.length) throw new Error('GIF フレームがありません');
-        if (!window.JSZip) throw new Error('ZIP ライブラリが利用できません');
+        if (!gifFrames.length) throw new Error(tRef.current.errNoGifVideoFrames);
+        if (!window.JSZip) throw new Error(tRef.current.errNoZip);
 
         setStatus('generating');
-        setStatusMessage('フレーム画像 ZIP を生成中...');
+        setStatusMessage(tRef.current.statusGeneratingZip);
         setProgress(0);
 
         const zip = new window.JSZip();
@@ -930,7 +1152,7 @@
           sourceGifName,
         });
         setStatus('done');
-        setStatusMessage(`ZIP 生成完了: ${gifFrames.length} フレーム`);
+        setStatusMessage(tRef.current.statusZipDone(gifFrames.length));
         setProgress(100);
       }, [gifFrames, sourceGifName, setBlobOutput]);
 
@@ -951,13 +1173,13 @@
         } catch (err) {
           if (isCancelError(err)) {
             setStatus('idle');
-            setStatusMessage('キャンセルしました');
+            setStatusMessage(tRef.current.statusCancelled);
             setProgress(0);
             return;
           }
           console.error(err);
           setStatus('error');
-          setStatusMessage(err.message || '変換に失敗しました');
+          setStatusMessage(err.message || tRef.current.errConvert);
           setProgress(0);
         }
       }, [mode, clearOutput, generateGif, generateVideoFromGif, generateZipFromGif]);
@@ -965,7 +1187,7 @@
       const cancelCurrent = useCallback(() => {
         stopOngoingWork();
         setStatus('idle');
-        setStatusMessage('キャンセルしました');
+        setStatusMessage(tRef.current.statusCancelled);
         setProgress(0);
       }, [stopOngoingWork]);
 
@@ -1040,15 +1262,15 @@
       }, [output]);
 
       const modeLabel = (
-        mode === MODES.TO_GIF ? '画像/動画 -> GIF' :
-        mode === MODES.GIF_TO_VIDEO ? `GIF -> 動画(${effectiveVideoOutput.label})` :
-        'GIF -> 画像ZIP'
+        mode === MODES.TO_GIF ? t.modeLabel[MODES.TO_GIF] :
+        mode === MODES.GIF_TO_VIDEO ? `${t.modeLabel[MODES.GIF_TO_VIDEO]}(${effectiveVideoOutput.label})` :
+        t.modeLabel[MODES.GIF_TO_IMAGES]
       );
 
       const actionLabel = (
-        mode === MODES.TO_GIF ? 'GIF 生成' :
-        mode === MODES.GIF_TO_VIDEO ? `動画生成 (${effectiveVideoOutput.label})` :
-        '画像ZIP生成'
+        mode === MODES.TO_GIF ? t.actionGif :
+        mode === MODES.GIF_TO_VIDEO ? t.actionVideo(effectiveVideoOutput.label) :
+        t.actionZip
       );
 
       const readyForConvert = mode === MODES.TO_GIF
@@ -1057,17 +1279,17 @@
 
       const idleSummary = (() => {
         if (mode === MODES.TO_GIF) {
-          if (!toGifFrames.length) return '画像または動画を追加してください';
+          if (!toGifFrames.length) return t.idleToGifEmpty;
           return [
-            `${toGifFrames.length} フレーム`,
-            `入力 ${settings.ms.toFixed(3)}ms (${settings.hz.toFixed(2)}Hz)`,
-            `保存 ${savedMs}ms (${savedHz.toFixed(2)}Hz)`,
-            `幅 ${Math.round(settings.width)}px`,
-            `色数上限 ${Math.round(settings.maxColors)}`,
+            t.framesUnit(toGifFrames.length),
+            t.idleInput(settings.ms.toFixed(3), settings.hz.toFixed(2)),
+            t.idleSaved(savedMs, savedHz.toFixed(2)),
+            t.idleWidth(Math.round(settings.width)),
+            t.idleColors(Math.round(settings.maxColors)),
           ].join(' · ');
         }
-        if (!gifFrames.length) return 'GIF ファイルを追加してください';
-        return `${gifFrames.length} フレーム · 入力 GIF: ${sourceGifName}`;
+        if (!gifFrames.length) return t.idleGifEmpty;
+        return t.idleGifSummary(gifFrames.length, sourceGifName);
       })();
 
       return (
@@ -1082,9 +1304,16 @@
                 </span>
               </div>
               <button
+                onClick={() => setLang((l) => l === 'ja' ? 'en' : 'ja')}
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-semibold text-xs tracking-wide"
+                title="Switch language / 言語切替"
+              >
+                {t.langToggle}
+              </button>
+              <button
                 onClick={() => setDarkMode((d) => !d)}
                 className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title={darkMode ? 'ライトモード' : 'ダークモード'}
+                title={darkMode ? t.darkTitle : t.lightTitle}
               >
                 {darkMode ? <IcoSun size={18} /> : <IcoMoon size={18} />}
               </button>
@@ -1094,21 +1323,17 @@
           <main className="max-w-6xl mx-auto px-4 py-6 space-y-5">
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
               <div className="grid sm:grid-cols-3 gap-2">
-                {[
-                  { id: MODES.TO_GIF, label: '画像/動画 -> GIF' },
-                  { id: MODES.GIF_TO_VIDEO, label: 'GIF -> 動画(WebM)' },
-                  { id: MODES.GIF_TO_IMAGES, label: 'GIF -> 画像ZIP' },
-                ].map((m) => (
+                {[MODES.TO_GIF, MODES.GIF_TO_VIDEO, MODES.GIF_TO_IMAGES].map((modeId) => (
                   <button
-                    key={m.id}
-                    onClick={() => switchMode(m.id)}
+                    key={modeId}
+                    onClick={() => switchMode(modeId)}
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                      mode === m.id
+                      mode === modeId
                         ? 'bg-blue-500 text-white border-blue-500'
                         : 'bg-gray-50 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
-                    {m.label}
+                    {t.modeLabel[modeId]}
                   </button>
                 ))}
               </div>
@@ -1149,16 +1374,14 @@
               <IcoUpload size={40} className={`mx-auto mb-3 transition-colors ${isDragOver ? 'text-blue-500' : 'text-gray-300 dark:text-gray-600'}`} />
               <p className="font-semibold text-gray-700 dark:text-gray-300">
                 {mode === MODES.TO_GIF
-                  ? (isDragOver ? 'ここにドロップ！' : '画像または動画をドラッグ＆ドロップ、またはクリック')
-                  : (isDragOver ? 'GIF をドロップ！' : 'GIF をドラッグ＆ドロップ、またはクリック')}
+                  ? (isDragOver ? t.dropToGifOver : t.dropToGifIdle)
+                  : (isDragOver ? t.dropGifOver : t.dropGifIdle)}
               </p>
               <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                {mode === MODES.TO_GIF
-                  ? '画像: PNG/JPG/WebP/GIF, 動画: MP4/WebM/その他ブラウザ対応形式'
-                  : '入力: GIF 1ファイル'}
+                {mode === MODES.TO_GIF ? t.dropToGifHint : t.dropGifHint}
               </p>
               {activeFrames.length > 0 && (
-                <p className="text-xs text-blue-500 mt-2">{activeFrames.length} フレーム読み込み済み</p>
+                <p className="text-xs text-blue-500 mt-2">{t.framesLoaded(activeFrames.length)}</p>
               )}
             </div>
 
@@ -1166,7 +1389,7 @@
               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 animate-in">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-semibold text-sm text-gray-700 dark:text-gray-300">
-                    フレーム <span className="font-normal text-gray-400">({activeFrames.length} 枚)</span>
+                    {t.secFrames} <span className="font-normal text-gray-400">({activeFrames.length})</span>
                   </h2>
                   <div className="flex gap-2">
                     {mode === MODES.TO_GIF && (
@@ -1174,14 +1397,14 @@
                         onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
                         className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 font-medium transition-colors"
                       >
-                        <IcoPlus size={11} /> 追加
+                        <IcoPlus size={11} /> {t.btnAdd}
                       </button>
                     )}
                     <button
                       onClick={clearCurrent}
                       className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 font-medium transition-colors"
                     >
-                      <IcoX size={11} /> クリア
+                      <IcoX size={11} /> {t.btnClear}
                     </button>
                   </div>
                 </div>
@@ -1221,18 +1444,18 @@
                               onClick={(e) => { e.stopPropagation(); moveToGifFrame(idx, -1); }}
                               disabled={idx === 0}
                               className="p-0.5 text-white disabled:opacity-25 hover:text-blue-300 transition-colors"
-                              title="左へ移動"
+                              title={t.btnMoveLeft}
                             ><IcoChevLeft size={10} /></button>
                             <button
                               onClick={(e) => { e.stopPropagation(); deleteToGifFrame(idx); }}
                               className="p-0.5 text-white hover:text-red-300 transition-colors"
-                              title="削除"
+                              title={t.btnDelete}
                             ><IcoX size={10} /></button>
                             <button
                               onClick={(e) => { e.stopPropagation(); moveToGifFrame(idx, 1); }}
                               disabled={idx === activeFrames.length - 1}
                               className="p-0.5 text-white disabled:opacity-25 hover:text-blue-300 transition-colors"
-                              title="右へ移動"
+                              title={t.btnMoveRight}
                             ><IcoChevRight size={10} /></button>
                           </div>
                         </>
@@ -1245,10 +1468,10 @@
 
             <div className="grid lg:grid-cols-5 gap-5">
               <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-5">
-                <h2 className="font-semibold text-sm text-gray-700 dark:text-gray-300">設定</h2>
+                <h2 className="font-semibold text-sm text-gray-700 dark:text-gray-300">{t.secSettings}</h2>
 
                 <NumericControl
-                  label="フレームレート (Hz)"
+                  label={t.labelHz}
                   value={settings.hz}
                   min={MIN_HZ}
                   max={MAX_HZ}
@@ -1260,7 +1483,7 @@
                   highLabel="240Hz"
                 />
                 <NumericControl
-                  label="フレーム遅延 (ms)"
+                  label={t.labelMs}
                   value={settings.ms}
                   min={MIN_MS}
                   max={MAX_MS}
@@ -1274,15 +1497,15 @@
 
                 {mode === MODES.TO_GIF && (
                   <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-900/20 p-3 text-xs text-amber-700 dark:text-amber-300">
-                    <p>GIF 保存値: {savedMs}ms ({savedHz.toFixed(2)}Hz)</p>
-                    <p className="mt-1">GIF 仕様上、保存は 10ms 単位に丸められます。</p>
+                    <p>{t.gifSaveNote(savedMs, savedHz.toFixed(2))}</p>
+                    <p className="mt-1">{t.gifSaveHint}</p>
                   </div>
                 )}
 
                 {mode === MODES.TO_GIF && (
                   <>
                     <NumericControl
-                      label="ループ回数"
+                      label={t.labelLoop}
                       value={settings.loop}
                       min={0}
                       max={10}
@@ -1290,11 +1513,11 @@
                       decimals={0}
                       unit=""
                       onChange={setLoop}
-                      lowLabel="0 (無限)"
+                      lowLabel={t.loopLow}
                       highLabel="10"
                     />
                     <NumericControl
-                      label="出力横幅"
+                      label={t.labelWidth}
                       value={settings.width}
                       min={MIN_WIDTH}
                       max={MAX_WIDTH}
@@ -1306,7 +1529,7 @@
                       highLabel="4000px"
                     />
                     <NumericControl
-                      label="品質"
+                      label={t.labelQuality}
                       value={settings.quality}
                       min={1}
                       max={10}
@@ -1314,29 +1537,29 @@
                       decimals={0}
                       unit="/10"
                       onChange={setQuality}
-                      lowLabel="1 (高速)"
-                      highLabel="10 (高品質)"
+                      lowLabel={t.qualityLow}
+                      highLabel={t.qualityHigh}
                     />
                     <NumericControl
-                      label="最大色数"
+                      label={t.labelMaxColors}
                       value={settings.maxColors}
                       min={MIN_COLORS}
                       max={MAX_COLORS}
                       step={1}
                       decimals={0}
-                      unit="色"
+                      unit={t.unitColors}
                       onChange={setMaxColors}
-                      lowLabel="2色"
-                      highLabel="256色"
+                      lowLabel={t.lowColors}
+                      highLabel={t.highColors}
                     />
                     <NumericControl
-                      label="動画フレーム抽出上限"
+                      label={t.labelVideoLimit}
                       value={settings.videoFrameLimit}
                       min={MIN_VIDEO_FRAME_LIMIT}
                       max={MAX_VIDEO_FRAME_LIMIT}
                       step={1}
                       decimals={0}
-                      unit="フレーム"
+                      unit={t.unitFrames}
                       onChange={setVideoFrameLimit}
                       lowLabel="1"
                       highLabel="2000"
@@ -1346,7 +1569,7 @@
 
                 {mode === MODES.GIF_TO_VIDEO && (
                   <div>
-                    <label className="text-sm text-gray-600 dark:text-gray-400 mb-1.5 block">出力フォーマット</label>
+                    <label className="text-sm text-gray-600 dark:text-gray-400 mb-1.5 block">{t.labelFormat}</label>
                     <div className="flex gap-2">
                       {Object.values(VIDEO_OUTPUTS).map((fmt) => {
                         const supported = fmt.id === 'webm' || !!mp4MimeType;
@@ -1363,7 +1586,7 @@
                                   : 'opacity-40 cursor-not-allowed bg-gray-50 dark:bg-gray-700/60 text-gray-400 border-gray-200 dark:border-gray-600'
                             }`}
                           >
-                            {fmt.label}{!supported && ' (非対応)'}
+                            {fmt.label}{!supported && ` ${t.unsupported}`}
                           </button>
                         );
                       })}
@@ -1373,14 +1596,14 @@
 
                 {mode !== MODES.TO_GIF && (
                   <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-3 text-xs text-gray-500 dark:text-gray-400">
-                    <p>GIF 逆変換では GIF の各フレーム遅延を維持します。</p>
-                    <p className="mt-1">動画出力時は captureStream の補助FPSとして Hz 設定を使用します。</p>
+                    <p>{t.reverseNote}</p>
+                    <p className="mt-1">{t.reverseHint}</p>
                   </div>
                 )}
               </div>
 
               <div className="lg:col-span-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col">
-                <h2 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-3">プレビュー</h2>
+                <h2 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-3">{t.secPreview}</h2>
                 {activeFrames.length > 0 ? (
                   <>
                     <div className="flex-1 bg-gray-100 dark:bg-gray-900/60 rounded-lg overflow-hidden flex items-center justify-center mb-3" style={{ minHeight: 220 }}>
@@ -1394,36 +1617,36 @@
                     <div className="flex items-center justify-center gap-1">
                       <button onClick={() => { setIsPlaying(false); setPreviewIdx(0); }}
                         className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        title="最初のフレーム"
+                        title={t.btnFirst}
                       ><IcoSkipBack size={15} /></button>
                       <button onClick={() => { setIsPlaying(false); setPreviewIdx((p) => Math.max(0, p - 1)); }}
                         className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        title="前のフレーム"
+                        title={t.btnPrev}
                       ><IcoChevLeft size={15} /></button>
                       <button
                         onClick={() => setIsPlaying((p) => !p)}
                         className="mx-1 p-2.5 rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white transition-colors shadow"
-                        title={isPlaying ? '一時停止' : '再生'}
+                        title={isPlaying ? t.btnPause : t.btnPlay}
                       >
                         {isPlaying ? <IcoPause size={15} /> : <IcoPlay size={15} />}
                       </button>
                       <button onClick={() => { setIsPlaying(false); setPreviewIdx((p) => Math.min(activeFrames.length - 1, p + 1)); }}
                         className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        title="次のフレーム"
+                        title={t.btnNext}
                       ><IcoChevRight size={15} /></button>
                       <button onClick={() => { setIsPlaying(false); setPreviewIdx(activeFrames.length - 1); }}
                         className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        title="最後のフレーム"
+                        title={t.btnLast}
                       ><IcoSkipFwd size={15} /></button>
                     </div>
 
                     <p className="text-center text-xs text-gray-400 mt-2">
-                      {previewIdx + 1} / {activeFrames.length} フレーム
-                      {isPlaying && <span className="ml-2 text-blue-500 font-medium">▶ 再生中</span>}
+                      {t.frameCounter(previewIdx + 1, activeFrames.length)}
+                      {isPlaying && <span className="ml-2 text-blue-500 font-medium">{t.playing}</span>}
                     </p>
 
                     <div className="flex items-center justify-center gap-2 mt-2">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">遅延:</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{t.delayLabel}</span>
                       <input
                         type="number"
                         min={mode === MODES.TO_GIF ? Math.ceil(MIN_MS) : 10}
@@ -1441,8 +1664,8 @@
                         <button
                           onClick={resetSelectedToGifFrameDelay}
                           className="text-xs text-blue-500 hover:underline"
-                          title="デフォルト遅延に戻す"
-                        >リセット</button>
+                          title={t.resetTitle}
+                        >{t.btnReset}</button>
                       )}
                     </div>
                     {mode === MODES.TO_GIF && toGifFrames.some((f) => f.customDelay) && (
@@ -1450,7 +1673,7 @@
                         <button
                           onClick={applyDefaultDelayToAllToGifFrames}
                           className="text-xs text-gray-400 hover:text-blue-500 transition-colors"
-                        >全フレームをデフォルト遅延に統一</button>
+                        >{t.btnApplyAll}</button>
                       </div>
                     )}
                   </>
@@ -1458,9 +1681,7 @@
                   <div className="flex-1 flex flex-col items-center justify-center text-gray-300 dark:text-gray-600 py-10">
                     <IcoImage size={48} className="mb-3 opacity-60" />
                     <p className="text-sm">
-                      {mode === MODES.TO_GIF
-                        ? '画像または動画を追加するとプレビューが表示されます'
-                        : 'GIF を追加するとプレビューが表示されます'}
+                      {mode === MODES.TO_GIF ? t.emptyToGif : t.emptyGif}
                     </p>
                   </div>
                 )}
@@ -1478,7 +1699,7 @@
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
                           <IcoLoader size={13} className="animate-spin text-blue-500" />
-                          {statusMessage || '処理中...'}
+                          {statusMessage || t.processing}
                         </span>
                         <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">{progress}%</span>
                       </div>
@@ -1494,14 +1715,14 @@
                     <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                       <IcoCheck size={16} />
                       <span className="text-sm font-medium">
-                        {statusMessage || '処理完了'} {output ? `— ${fmtSize(output.size)}` : ''}
+                        {statusMessage} {output ? `— ${fmtSize(output.size)}` : ''}
                       </span>
                     </div>
                   )}
                   {status === 'error' && (
                     <div className="flex items-center gap-2 text-red-500">
                       <IcoAlert size={16} />
-                      <span className="text-sm">{statusMessage || 'エラーが発生しました'}</span>
+                      <span className="text-sm">{statusMessage}</span>
                     </div>
                   )}
                 </div>
@@ -1512,7 +1733,7 @@
                       onClick={cancelCurrent}
                       className="px-4 py-2 rounded-lg border border-red-300 dark:border-red-700 text-red-500 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                     >
-                      キャンセル
+                      {t.btnCancel}
                     </button>
                   ) : (
                     <button
@@ -1520,7 +1741,7 @@
                       disabled={!readyForConvert}
                       className="px-6 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 active:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
                     >
-                      {mode === MODES.TO_GIF && !workerReady ? '準備中...' : actionLabel}
+                      {mode === MODES.TO_GIF && !workerReady ? t.preparing : actionLabel}
                     </button>
                   )}
                   {output?.url && (
@@ -1528,7 +1749,7 @@
                       onClick={downloadOutput}
                       className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 active:bg-emerald-700 transition-colors shadow-sm"
                     >
-                      <IcoDownload size={14} /> ダウンロード
+                      <IcoDownload size={14} /> {t.btnDownload}
                     </button>
                   )}
                 </div>
@@ -1536,7 +1757,7 @@
 
               {output?.url && (
                 <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 animate-in">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">出力プレビュー:</p>
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{t.outPreview}</p>
                   {output.type === 'gif' && (
                     <img
                       src={output.url}
@@ -1553,9 +1774,9 @@
                   )}
                   {output.type === 'zip' && (
                     <div className="text-sm text-gray-600 dark:text-gray-300">
-                      <p>ZIP を生成しました。ダウンロードボタンから保存できます。</p>
+                      <p>{t.zipMsg}</p>
                       <p className="text-xs text-gray-400 mt-1">
-                        {output.meta?.frameCount ? `${output.meta.frameCount} フレーム` : ''}
+                        {output.meta?.frameCount ? t.framesUnit(output.meta.frameCount) : ''}
                       </p>
                     </div>
                   )}
@@ -1564,8 +1785,10 @@
             </div>
           </main>
 
-          <footer className="text-center py-6 text-xs text-gray-300 dark:text-gray-600">
-            GIF-Conv — ブラウザ完結型 GIF / Video / Frame 変換ツール
+          <footer className="text-center py-6 text-xs text-gray-400 dark:text-gray-500 space-y-1">
+            <p>{t.footerCopyright} · {t.footerLicense}</p>
+            <p>{t.footerAssisted}</p>
+            <p className="text-gray-300 dark:text-gray-600">{t.footerLibs}</p>
           </footer>
         </div>
       );

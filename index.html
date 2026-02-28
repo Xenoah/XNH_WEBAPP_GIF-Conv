@@ -743,10 +743,6 @@
           gifEncoderRef.current = null;
         }
 
-        const mimeType = getSupportedVideoMime(effectiveVideoFormat);
-        if (effectiveVideoFormat === 'mp4' && !mimeType) {
-          throw new Error('ã“ã®ãƒ–ãƒ©ã‚¦ã‚¶ã¯ MP4 å‡ºåŠ›ã«å¯¾å¿œã—ã¦ã„ã¾ã›ã‚“');
-        }
         setStatus('generating');
         setStatusMessage('GIF を生成中...');
         setProgress(0);
@@ -852,12 +848,7 @@
         const captureFps = clamp(Math.max(settings.hz, autoHz), MIN_HZ, MAX_HZ);
         const stream = canvas.captureStream(captureFps);
 
-        const mimeCandidates = [
-          'video/webm;codecs=vp9',
-          'video/webm;codecs=vp8',
-          'video/webm',
-        ];
-        const mimeType = mimeCandidates.find((m) => MediaRecorder.isTypeSupported?.(m)) || '';
+        const mimeType = getSupportedVideoMime(effectiveVideoFormat);
         const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
         recorderRef.current = recorder;
 
@@ -891,18 +882,19 @@
           recorderRef.current = null;
         }
 
-        const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
-        setBlobOutput(blob, 'video', 'animation.webm', {
+        const blob = new Blob(chunks, { type: mimeType || effectiveVideoOutput.mimeCandidates.at(-1) });
+        setBlobOutput(blob, 'video', `animation.${effectiveVideoOutput.extension}`, {
           width: w,
           height: h,
           frameCount: gifFrames.length,
           sourceGifName,
           captureFps,
+          format: effectiveVideoOutput.id,
         });
         setStatus('done');
-        setStatusMessage(`動画生成完了: ${gifFrames.length} フレーム (${captureFps.toFixed(2)}fps)`);
+        setStatusMessage(`動画生成完了: ${gifFrames.length} フレーム (${captureFps.toFixed(2)}fps) [${effectiveVideoOutput.label}]`);
         setProgress(100);
-      }, [gifFrames, settings.hz, sourceGifName, setBlobOutput]);
+      }, [gifFrames, settings.hz, effectiveVideoFormat, effectiveVideoOutput, sourceGifName, setBlobOutput, getSupportedVideoMime]);
 
       const generateZipFromGif = useCallback(async () => {
         if (!gifFrames.length) throw new Error('GIF フレームがありません');
@@ -1008,6 +1000,18 @@
         });
       }, []);
 
+      const dropReorderFrame = useCallback((fromIdx, toIdx) => {
+        if (fromIdx == null || toIdx == null || fromIdx === toIdx) {
+          setDragFrameIdx(null);
+          setDropFrameIdx(null);
+          return;
+        }
+        setToGifFrames((prev) => moveArrayItem(prev, fromIdx, toIdx));
+        setPreviewIdx((p) => remapMovedIndex(p, fromIdx, toIdx));
+        setDragFrameIdx(null);
+        setDropFrameIdx(null);
+      }, []);
+
       const switchMode = useCallback((nextMode) => {
         if (nextMode === mode) return;
         stopOngoingWork();
@@ -1037,13 +1041,13 @@
 
       const modeLabel = (
         mode === MODES.TO_GIF ? '画像/動画 -> GIF' :
-        mode === MODES.GIF_TO_VIDEO ? 'GIF -> 動画(WebM)' :
+        mode === MODES.GIF_TO_VIDEO ? `GIF -> 動画(${effectiveVideoOutput.label})` :
         'GIF -> 画像ZIP'
       );
 
       const actionLabel = (
         mode === MODES.TO_GIF ? 'GIF 生成' :
-        mode === MODES.GIF_TO_VIDEO ? '動画生成 (WebM)' :
+        mode === MODES.GIF_TO_VIDEO ? `動画生成 (${effectiveVideoOutput.label})` :
         '画像ZIP生成'
       );
 
@@ -1187,10 +1191,18 @@
                     <div
                       key={frame.id}
                       onClick={() => { setPreviewIdx(idx); setIsPlaying(false); }}
+                      draggable={mode === MODES.TO_GIF}
+                      onDragStart={mode === MODES.TO_GIF ? (e) => { e.dataTransfer.effectAllowed = 'move'; setDragFrameIdx(idx); } : undefined}
+                      onDragOver={mode === MODES.TO_GIF ? (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDropFrameIdx(idx); } : undefined}
+                      onDragLeave={mode === MODES.TO_GIF ? () => setDropFrameIdx((p) => p === idx ? null : p) : undefined}
+                      onDrop={mode === MODES.TO_GIF ? (e) => { e.preventDefault(); dropReorderFrame(dragFrameIdx, idx); } : undefined}
+                      onDragEnd={mode === MODES.TO_GIF ? () => { setDragFrameIdx(null); setDropFrameIdx(null); } : undefined}
                       className={`relative group aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all
                         ${previewIdx === idx
                           ? 'border-blue-500 shadow-md shadow-blue-200 dark:shadow-blue-900/60'
-                          : 'border-transparent hover:border-gray-300 dark:hover:border-gray-500'}`}
+                          : dropFrameIdx === idx && dragFrameIdx !== idx
+                            ? 'border-green-400 bg-green-50/20 dark:bg-green-900/20 scale-105'
+                            : 'border-transparent hover:border-gray-300 dark:hover:border-gray-500'}`}
                     >
                       <img src={frame.src} alt={`Frame ${idx + 1}`} className="w-full h-full object-cover" />
                       <span className="absolute top-0 left-0 bg-black/60 text-white text-[9px] font-bold px-1 py-0.5 rounded-br leading-tight">
@@ -1317,7 +1329,46 @@
                       lowLabel="2色"
                       highLabel="256色"
                     />
+                    <NumericControl
+                      label="動画フレーム抽出上限"
+                      value={settings.videoFrameLimit}
+                      min={MIN_VIDEO_FRAME_LIMIT}
+                      max={MAX_VIDEO_FRAME_LIMIT}
+                      step={1}
+                      decimals={0}
+                      unit="フレーム"
+                      onChange={setVideoFrameLimit}
+                      lowLabel="1"
+                      highLabel="2000"
+                    />
                   </>
+                )}
+
+                {mode === MODES.GIF_TO_VIDEO && (
+                  <div>
+                    <label className="text-sm text-gray-600 dark:text-gray-400 mb-1.5 block">出力フォーマット</label>
+                    <div className="flex gap-2">
+                      {Object.values(VIDEO_OUTPUTS).map((fmt) => {
+                        const supported = fmt.id === 'webm' || !!mp4MimeType;
+                        return (
+                          <button
+                            key={fmt.id}
+                            disabled={!supported}
+                            onClick={() => setVideoFormat(fmt.id)}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                              effectiveVideoFormat === fmt.id
+                                ? 'bg-blue-500 text-white border-blue-500'
+                                : supported
+                                  ? 'bg-gray-50 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                  : 'opacity-40 cursor-not-allowed bg-gray-50 dark:bg-gray-700/60 text-gray-400 border-gray-200 dark:border-gray-600'
+                            }`}
+                          >
+                            {fmt.label}{!supported && ' (非対応)'}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
 
                 {mode !== MODES.TO_GIF && (
@@ -1368,9 +1419,40 @@
 
                     <p className="text-center text-xs text-gray-400 mt-2">
                       {previewIdx + 1} / {activeFrames.length} フレーム
-                      <span className="ml-2">{Math.round(previewDelay)}ms</span>
                       {isPlaying && <span className="ml-2 text-blue-500 font-medium">▶ 再生中</span>}
                     </p>
+
+                    <div className="flex items-center justify-center gap-2 mt-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">遅延:</span>
+                      <input
+                        type="number"
+                        min={mode === MODES.TO_GIF ? Math.ceil(MIN_MS) : 10}
+                        max={MAX_FRAME_DELAY_MS}
+                        step={mode === MODES.TO_GIF ? 1 : 10}
+                        value={Math.round(activeFrameDelayMs)}
+                        onChange={(e) => {
+                          const v = Number(e.target.value);
+                          if (Number.isFinite(v) && v > 0) updateFrameDelayAt(mode, previewIdx, v);
+                        }}
+                        className="w-20 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-0.5 text-xs text-right"
+                      />
+                      <span className="text-xs text-gray-400">ms</span>
+                      {mode === MODES.TO_GIF && activeFrame?.customDelay && (
+                        <button
+                          onClick={resetSelectedToGifFrameDelay}
+                          className="text-xs text-blue-500 hover:underline"
+                          title="デフォルト遅延に戻す"
+                        >リセット</button>
+                      )}
+                    </div>
+                    {mode === MODES.TO_GIF && toGifFrames.some((f) => f.customDelay) && (
+                      <div className="flex items-center justify-center mt-1">
+                        <button
+                          onClick={applyDefaultDelayToAllToGifFrames}
+                          className="text-xs text-gray-400 hover:text-blue-500 transition-colors"
+                        >全フレームをデフォルト遅延に統一</button>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-gray-300 dark:text-gray-600 py-10">

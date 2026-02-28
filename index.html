@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pic2GIF</title>
+  <title>GIF昆布 GIF Converter</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -46,15 +46,54 @@
     const MAX_HZ = 240;
     const MIN_MS = 1000 / MAX_HZ;
     const MAX_MS = 1000;
+    const MAX_FRAME_DELAY_MS = 10000;
     const MIN_WIDTH = 1;
     const MAX_WIDTH = 4000;
+    const MIN_VIDEO_FRAME_LIMIT = 1;
+    const MAX_VIDEO_FRAME_LIMIT = 2000;
+    const DEFAULT_VIDEO_FRAME_LIMIT = 800;
     const MIN_COLORS = 2;
     const MAX_COLORS = 256;
+    const VIDEO_OUTPUTS = {
+      webm: {
+        id: 'webm',
+        label: 'WebM',
+        extension: 'webm',
+        mimeCandidates: [
+          'video/webm;codecs=vp9',
+          'video/webm;codecs=vp8',
+          'video/webm',
+        ],
+      },
+      mp4: {
+        id: 'mp4',
+        label: 'MP4',
+        extension: 'mp4',
+        mimeCandidates: [
+          'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+          'video/mp4;codecs=avc1.42E01E',
+          'video/mp4',
+        ],
+      },
+    };
 
     const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const isCancelError = (err) => err && /キャンセル/.test(String(err.message || err));
+    const moveArrayItem = (items, from, to) => {
+      if (from === to || from < 0 || to < 0 || from >= items.length || to >= items.length) return items;
+      const next = [...items];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    };
+    const remapMovedIndex = (currentIdx, from, to) => {
+      if (currentIdx === from) return to;
+      if (from < to && currentIdx > from && currentIdx <= to) return currentIdx - 1;
+      if (to < from && currentIdx >= to && currentIdx < from) return currentIdx + 1;
+      return currentIdx;
+    };
     const fmtSize = (b) => (
       b < 1024 ? `${b} B` :
       b < 1048576 ? `${(b / 1024).toFixed(1)} KB` :
@@ -227,6 +266,8 @@
         width: 480,
         quality: 7,
         maxColors: 256,
+        videoFrameLimit: DEFAULT_VIDEO_FRAME_LIMIT,
+        videoFormat: 'webm',
       });
       const [status, setStatus] = useState('idle');
       const [statusMessage, setStatusMessage] = useState('');
@@ -234,6 +275,8 @@
       const [output, setOutput] = useState(null);
       const [workerReady, setWorkerReady] = useState(false);
       const [isDragOver, setIsDragOver] = useState(false);
+      const [dragFrameIdx, setDragFrameIdx] = useState(null);
+      const [dropFrameIdx, setDropFrameIdx] = useState(null);
       const [previewIdx, setPreviewIdx] = useState(0);
       const [isPlaying, setIsPlaying] = useState(false);
       const [darkMode, setDarkMode] = useState(
@@ -252,10 +295,40 @@
       const busy = status === 'processing' || status === 'generating';
       const savedMs = useMemo(() => Math.max(10, Math.round(settings.ms / 10) * 10), [settings.ms]);
       const savedHz = useMemo(() => 1000 / savedMs, [savedMs]);
-      const previewDelay = useMemo(() => {
-        if (mode === MODES.TO_GIF) return Math.max(10, settings.ms);
-        return Math.max(10, activeFrames[previewIdx]?.delayMs || 100);
-      }, [mode, settings.ms, activeFrames, previewIdx]);
+      const getFrameDelayMs = useCallback((frame, fallbackMs = settings.ms) => {
+        const raw = Number(frame?.delayMs);
+        return clamp(Number.isFinite(raw) ? raw : fallbackMs, MIN_MS, MAX_FRAME_DELAY_MS);
+      }, [settings.ms]);
+      const activeFrame = activeFrames[previewIdx] || null;
+      const activeFrameDelayMs = useMemo(
+        () => getFrameDelayMs(activeFrame),
+        [activeFrame, getFrameDelayMs]
+      );
+      const activeFrameHz = useMemo(() => 1000 / activeFrameDelayMs, [activeFrameDelayMs]);
+      const toGifDelayStats = useMemo(() => {
+        if (!toGifFrames.length) return null;
+        const inputDelays = toGifFrames.map((frame) => getFrameDelayMs(frame));
+        const savedDelays = inputDelays.map((delayMs) => Math.max(10, Math.round(delayMs / 10) * 10));
+        return {
+          inputMin: Math.min(...inputDelays),
+          inputMax: Math.max(...inputDelays),
+          savedMin: Math.min(...savedDelays),
+          savedMax: Math.max(...savedDelays),
+          customCount: toGifFrames.filter((frame) => frame.customDelay).length,
+        };
+      }, [getFrameDelayMs, toGifFrames]);
+      const getSupportedVideoMime = useCallback((formatId) => {
+        if (!window.MediaRecorder) return '';
+        const option = VIDEO_OUTPUTS[formatId] || VIDEO_OUTPUTS.webm;
+        if (!window.MediaRecorder.isTypeSupported) {
+          return formatId === 'webm' ? option.mimeCandidates[option.mimeCandidates.length - 1] : '';
+        }
+        return option.mimeCandidates.find((mimeType) => window.MediaRecorder.isTypeSupported(mimeType)) || '';
+      }, []);
+      const mp4MimeType = useMemo(() => getSupportedVideoMime('mp4'), [getSupportedVideoMime]);
+      const effectiveVideoFormat = settings.videoFormat === 'mp4' && mp4MimeType ? 'mp4' : 'webm';
+      const effectiveVideoOutput = VIDEO_OUTPUTS[effectiveVideoFormat];
+      const previewDelay = useMemo(() => activeFrameDelayMs, [activeFrameDelayMs]);
 
       const clearOutput = useCallback(() => {
         if (outputUrlRef.current) {
@@ -323,17 +396,31 @@
         return () => clearTimeout(timer);
       }, [isPlaying, activeFrames.length, previewIdx, previewDelay]);
 
+      useEffect(() => {
+        if (settings.videoFormat === 'mp4' && !mp4MimeType) {
+          setSettings((s) => (s.videoFormat === 'mp4' ? { ...s, videoFormat: 'webm' } : s));
+        }
+      }, [mp4MimeType, settings.videoFormat]);
+
+      const syncDefaultDelayToToGifFrames = useCallback((delayMs) => {
+        setToGifFrames((prev) => prev.map((frame) => (
+          frame.customDelay ? frame : { ...frame, delayMs }
+        )));
+      }, []);
+
       const setHz = useCallback((value) => {
         const hz = clamp(value, MIN_HZ, MAX_HZ);
         const ms = 1000 / hz;
         setSettings((s) => ({ ...s, hz, ms }));
-      }, []);
+        syncDefaultDelayToToGifFrames(ms);
+      }, [syncDefaultDelayToToGifFrames]);
 
       const setMs = useCallback((value) => {
         const ms = clamp(value, MIN_MS, MAX_MS);
         const hz = 1000 / ms;
         setSettings((s) => ({ ...s, ms, hz }));
-      }, []);
+        syncDefaultDelayToToGifFrames(ms);
+      }, [syncDefaultDelayToToGifFrames]);
 
       const setLoop = useCallback((value) => {
         const loop = Math.round(clamp(value, 0, 10));
@@ -354,6 +441,48 @@
         const maxColors = Math.round(clamp(value, MIN_COLORS, MAX_COLORS));
         setSettings((s) => ({ ...s, maxColors }));
       }, []);
+
+      const setVideoFrameLimit = useCallback((value) => {
+        const videoFrameLimit = Math.round(clamp(value, MIN_VIDEO_FRAME_LIMIT, MAX_VIDEO_FRAME_LIMIT));
+        setSettings((s) => ({ ...s, videoFrameLimit }));
+      }, []);
+
+      const setVideoFormat = useCallback((formatId) => {
+        if (formatId === 'mp4' && !mp4MimeType) return;
+        setSettings((s) => ({ ...s, videoFormat: formatId === 'mp4' ? 'mp4' : 'webm' }));
+      }, [mp4MimeType]);
+
+      const updateFrameDelayAt = useCallback((targetMode, idx, value) => {
+        const delayMs = clamp(value, MIN_MS, MAX_FRAME_DELAY_MS);
+        const updater = (frame, frameIdx) => {
+          if (frameIdx !== idx) return frame;
+          if (targetMode === MODES.TO_GIF) {
+            return { ...frame, delayMs, customDelay: true };
+          }
+          return { ...frame, delayMs };
+        };
+        if (targetMode === MODES.TO_GIF) {
+          setToGifFrames((prev) => prev.map(updater));
+          return;
+        }
+        setGifFrames((prev) => prev.map(updater));
+      }, []);
+
+      const resetSelectedToGifFrameDelay = useCallback(() => {
+        setToGifFrames((prev) => prev.map((frame, idx) => (
+          idx === previewIdx
+            ? { ...frame, delayMs: settings.ms, customDelay: false }
+            : frame
+        )));
+      }, [previewIdx, settings.ms]);
+
+      const applyDefaultDelayToAllToGifFrames = useCallback(() => {
+        setToGifFrames((prev) => prev.map((frame) => ({
+          ...frame,
+          delayMs: settings.ms,
+          customDelay: false,
+        })));
+      }, [settings.ms]);
 
       const extractFramesFromVideo = useCallback(async (file, onProgress) => {
         const url = URL.createObjectURL(file);
@@ -377,7 +506,11 @@
           }
 
           const targetFrameCount = Math.max(1, Math.floor(duration * settings.hz));
-          const maxFrames = 800;
+          const maxFrames = Math.round(clamp(
+            settings.videoFrameLimit,
+            MIN_VIDEO_FRAME_LIMIT,
+            MAX_VIDEO_FRAME_LIMIT
+          ));
           const stride = Math.max(1, Math.ceil(targetFrameCount / maxFrames));
           const actualFrameCount = Math.ceil(targetFrameCount / stride);
 
@@ -397,6 +530,7 @@
               src: canvas.toDataURL('image/png'),
               name: `${file.name} [${seq + 1}]`,
               delayMs: settings.ms,
+              customDelay: false,
             });
             if (onProgress) onProgress(Math.round(((seq + 1) / actualFrameCount) * 100), seq + 1, actualFrameCount);
           }
@@ -405,7 +539,7 @@
         } finally {
           URL.revokeObjectURL(url);
         }
-      }, [settings.hz, settings.ms]);
+      }, [settings.hz, settings.ms, settings.videoFrameLimit]);
 
       const decodeGifFrames = useCallback(async (file, onProgress) => {
         const bytes = await file.arrayBuffer();
@@ -510,6 +644,7 @@
                 src,
                 name: file.name,
                 delayMs: settings.ms,
+                customDelay: false,
               });
               setProgress(Math.round(((idx + 1) / files.length) * 100));
               continue;
@@ -608,6 +743,10 @@
           gifEncoderRef.current = null;
         }
 
+        const mimeType = getSupportedVideoMime(effectiveVideoFormat);
+        if (effectiveVideoFormat === 'mp4' && !mimeType) {
+          throw new Error('ã“ã®ãƒ–ãƒ©ã‚¦ã‚¶ã¯ MP4 å‡ºåŠ›ã«å¯¾å¿œã—ã¦ã„ã¾ã›ã‚“');
+        }
         setStatus('generating');
         setStatusMessage('GIF を生成中...');
         setProgress(0);
@@ -636,6 +775,8 @@
         for (let i = 0; i < images.length; i++) {
           if (cancelRef.current) throw new Error('キャンセル');
           const img = images[i];
+          const delayMs = getFrameDelayMs(toGifFrames[i]);
+          const frameSavedMs = Math.max(10, Math.round(delayMs / 10) * 10);
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, outW, outH);
           const scale = Math.min(outW / img.naturalWidth, outH / img.naturalHeight);
@@ -645,7 +786,7 @@
           const dy = Math.round((outH - dh) / 2);
           ctx.drawImage(img, dx, dy, dw, dh);
           quantizeCanvasColors(ctx, outW, outH, settings.maxColors);
-          gif.addFrame(canvas, { delay: savedMs, copy: true });
+          gif.addFrame(canvas, { delay: frameSavedMs, copy: true });
           setProgress(Math.round(((i + 1) / images.length) * 30));
         }
 
@@ -661,14 +802,30 @@
           width: outW,
           height: outH,
           frameCount: toGifFrames.length,
-          savedMs,
-          savedHz,
+          savedMs: toGifDelayStats?.savedMin,
+          savedHz: toGifDelayStats?.savedMin ? 1000 / toGifDelayStats.savedMin : null,
+          delayStats: toGifDelayStats,
         });
         setStatus('done');
         setStatusMessage(`生成完了: ${toGifFrames.length} フレーム / ${savedMs}ms (${savedHz.toFixed(2)}Hz)`);
+        if (toGifDelayStats && toGifDelayStats.savedMin !== toGifDelayStats.savedMax) {
+          setStatusMessage(`ç”Ÿæˆå®Œäº†: ${toGifFrames.length} ãƒ•ãƒ¬ãƒ¼ãƒ  / å€‹åˆ¥é…å»¶ ${toGifDelayStats.savedMin}-${toGifDelayStats.savedMax}ms`);
+        }
         setProgress(100);
         gifEncoderRef.current = null;
-      }, [workerReady, toGifFrames, settings.width, settings.quality, settings.loop, settings.maxColors, savedMs, savedHz, setBlobOutput]);
+      }, [
+        workerReady,
+        toGifFrames,
+        settings.width,
+        settings.quality,
+        settings.loop,
+        settings.maxColors,
+        savedMs,
+        savedHz,
+        getFrameDelayMs,
+        setBlobOutput,
+        toGifDelayStats,
+      ]);
 
       const generateVideoFromGif = useCallback(async () => {
         if (!gifFrames.length) throw new Error('GIF フレームがありません');
@@ -915,7 +1072,7 @@
             <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <IcoFilm size={22} className="text-blue-500" />
-                <span className="font-bold text-lg tracking-tight">Pic2GIF</span>
+                <span className="font-bold text-lg tracking-tight">GIF昆布</span>
                 <span className="hidden sm:inline text-xs text-gray-400 font-normal ml-1">
                   — {modeLabel}
                 </span>
@@ -1326,7 +1483,7 @@
           </main>
 
           <footer className="text-center py-6 text-xs text-gray-300 dark:text-gray-600">
-            Pic2GIF — ブラウザ完結型 GIF / Video / Frame 変換ツール
+            GIF-Conv — ブラウザ完結型 GIF / Video / Frame 変換ツール
           </footer>
         </div>
       );
